@@ -3,7 +3,10 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import {
-  createTable, getNews, queryDb,
+  createTable,
+  removeNews,
+  getNews,
+  queryDb,
 } from './database.js';
 
 if (process.env.NODE_ENV === 'production') {
@@ -21,9 +24,12 @@ app.use(cors());
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 
+// Initiate database
 createTable();
-getNews();
+await removeNews();
+await getNews();
 
+// Get news for web
 app.get('/', async (req, res) => {
   const getNewsFromDb = await queryDb(`
     SELECT * FROM news;
@@ -31,12 +37,19 @@ app.get('/', async (req, res) => {
   return res.json(getNewsFromDb);
 });
 
+// Manually get news
 app.get('/getNews', async (req, res) => {
   await getNews();
   return res.redirect('/');
 });
 
+// Remove old news
+app.delete('/deleteNews', async (req, res) => {
+  await removeNews();
+  return res.redirect('/');
+});
+
 app.listen(PORT, (err) => {
   if (err) return console.log(err);
-  return console.log(`Listening to PORT: '${PORT}`);
+  return console.log(`Listening to PORT: ${PORT}`);
 });

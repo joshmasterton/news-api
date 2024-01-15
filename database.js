@@ -37,6 +37,7 @@ export const queryDb = async (query) => {
   }
 };
 
+// Collect all news
 export const getNews = async () => {
   try {
     // Gather latest news from api
@@ -75,6 +76,22 @@ export const getNews = async () => {
   }
 };
 
+// Check old news and remove
+export const removeNews = async () => {
+  try {
+    await queryDb({
+      text: `
+        DELETE FROM news
+        WHERE pubDate < $1
+      `,
+      values: [new Date(new Date().setDate(new Date().getDate() - 3))],
+    });
+  } catch (err) {
+    console.log(err.message);
+  }
+};
+
+// Build news database table
 export const createTable = async () => {
   try {
     // await queryDb(`
